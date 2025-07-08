@@ -1,0 +1,8 @@
+CREATE TABLE projects (
+    id SERIAL PRIMARY KEY, 
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    title TEXT NOT NULL, 
+    description TEXT, 
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
