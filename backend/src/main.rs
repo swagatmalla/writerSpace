@@ -6,22 +6,14 @@ mod handlers;
 // Bring in required crated from Axum (web framework), Serde (for JSON), and standard library
 use axum::{
     routing::{post, get}, //{delete, patch, put}
-    Json, Router, // `Json` lets us work with JSON data easily
+    Router, 
 };
 
-use serde::{Deserialize, Serialize};    // For converting between Rust structs and JSON
 use std::{env, net::SocketAddr};   // To define the address/port the server listens on 
-//use dotenvy::dotenv;
-use reqwest::Client;
-use serde_json::Value; // when you want to parse JSON without a predefined Rust struct, or you want to inspect JSON dynamically, you use serde_json::Value
+use dotenvy::dotenv;
+//use reqwest::Client;
+//use serde_json::Value; // when you want to parse JSON without a predefined Rust struct, or you want to inspect JSON dynamically, you use serde_json::Value
 use crate::db::{DbPool, establish_connection_pool};
-
-
-// todo: Possibly clean up the code for all the `crate` imports
-//use crate::schema::users::dsl::*;
-//use crate::schema::documents::dsl::*;
-//use crate::schema::projects::dsl::*;
-//use crate::models::{User, Project, Document};
 
 // The main function sets up the Axum server and defines the routes
 #[tokio::main] // macro to set up the asynchronous runtime using Tokio
@@ -35,7 +27,7 @@ async fn main(){
             .route("/analyze", post(handlers::analyze::analyze_handler))
             .route("/users", get(handlers::users::get_users))
             .route("/createUser", post(handlers::users::create_user_handler))
-            .route("/createProject", post(handlers::posts::create_project_handler))
+            .route("/createProject", post(handlers::projects::create_project_handler))
             .with_state(pool.clone());
 
     // Set the address to listen on (localhost:3000)

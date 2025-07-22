@@ -3,7 +3,6 @@ use axum::{
     Json // `Json` lets us work with JSON data easily
 };
 use std::{env};   // To define the address/port the server listens on 
-use dotenvy::dotenv;
 use reqwest::Client;
 use serde_json::Value; // when you want to parse JSON without a predefined Rust struct, or you want to inspect JSON dynamically, you use serde_json::Value
 

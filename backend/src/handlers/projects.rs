@@ -6,13 +6,13 @@ use axum::{
 //use serde::{Deserialize, Serialize};    // For converting between Rust structs and JSON
 use diesel::{prelude::*}; // brings in all common Diesel traits and helper functions into scope
 use chrono::Utc;
-use crate::schema::users::dsl::*;
+use crate::schema::projects::dsl::*;
 use crate::models::Project;
+use crate::models::NewProject;
 use crate::db::{DbPool};
 
 #[derive(serde::Deserialize)]
 pub struct NewUserInput {
-    id: i32, 
     user_id: String,
     title: String, 
     description: String
@@ -21,10 +21,18 @@ pub struct NewUserInput {
 pub async fn create_project_handler(
     State(pool): State<DbPool>,
     Json(input): Json<NewUserInput>,
+    //return type -> Result<Json<Project>, (StatusCode, String)>
 ) -> Result<Json<Project>, (axum::http::StatusCode, String)>{ // return a json object on a succesful operation, or an error tuple on a FAIL
-    let new_user= Project{
-        //id: 0, // will be ignored if auto-incremented
-        user_id: Some(input.user_id.parse()),
+    
+    // using ? operator will
+    // extract the i32 if Ok(i32)
+    // if Err(...), return early from the function with that error
+    let parsed_user_id = input.user_id.parse().map_err(|e| {
+        (axum::http::StatusCode::BAD_REQUEST, format!("Invalid user_id:{}", e))
+    })?;
+
+    let new_project = NewProject {
+        user_id: Some(parsed_user_id),
         title: input.title.clone(), 
         description: Some(input.description.clone()), 
         created_at: Some(Utc::now().naive_utc()), 
@@ -35,10 +43,10 @@ pub async fn create_project_handler(
     let mut conn = pool.
         get().map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?; // ? to short-circuit the program incase of a failure
 
-    diesel::insert_into(users)
-        .values(&new_user)
-        .execute(&mut conn)
+    let inserted_project:Project = diesel::insert_into(projects)
+        .values(&new_project)
+        .get_result(&mut conn)
         .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    return Ok(Json(new_user));
+    return Ok(Json(inserted_project));
 }

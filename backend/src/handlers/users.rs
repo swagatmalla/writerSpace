@@ -3,11 +3,11 @@ use axum::{
     Json// `Json` lets us work with JSON data easily
 };
 
-use serde::{Deserialize, Serialize};    // For converting between Rust structs and JSON
 use diesel::{prelude::*}; // brings in all common Diesel traits and helper functions into scope
 use chrono::Utc;
 use crate::schema::users::dsl::*;
 use crate::models::User;
+use crate::models::NewUser;
 use crate::db::{DbPool};
 
 #[derive(serde::Deserialize)]
@@ -21,8 +21,7 @@ pub async fn create_user_handler(
     State(pool): State<DbPool>,
     Json(input): Json<NewUserInput>,
 ) -> Result<Json<User>, (axum::http::StatusCode, String)>{ // return a json object on a succesful operation, or an error tuple on a FAIL
-    let new_user= User{
-        id: 0, // will be ignored if auto-incremented
+    let new_user= NewUser{
         username: input.username.clone(),
         email: input.email.clone(),
         hashed_password: format!("hashed({})", input.password), // fake hashing for test
@@ -34,12 +33,12 @@ pub async fn create_user_handler(
     let mut conn = pool.
         get().map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?; // ? to short-circuit the program incase of a failure
 
-    diesel::insert_into(users)
+    let inserted_user: User = diesel::insert_into(users)
         .values(&new_user)
-        .execute(&mut conn)
+        .get_result(&mut conn)
         .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    return Ok(Json(new_user));
+    return Ok(Json(inserted_user));
 }
 
 pub async fn get_users(State(pool): State<DbPool>) -> Json<Vec<User>>{

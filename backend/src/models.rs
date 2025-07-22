@@ -24,8 +24,19 @@ pub struct User{
     pub updated_at: Option<NaiveDateTime> 
 }
 
+#[derive(Insertable)]
+#[diesel(table_name = users)]
+pub struct NewUser{
+    pub username: String, 
+    pub email: String, 
+    pub hashed_password: String,
+    pub created_at: Option<NaiveDateTime>, 
+    pub updated_at: Option<NaiveDateTime>
+}
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Selectable)]
+
+
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = projects)]
 #[diesel(check_for_backend(Pg))]
 pub struct Project{
@@ -37,8 +48,17 @@ pub struct Project{
     pub updated_at:Option<NaiveDateTime>
 }
 
+#[derive(Insertable)]
+#[diesel(table_name = projects)]
+pub struct NewProject{
+    pub user_id: Option<i32>,
+    pub title: String, 
+    pub description: Option<String>,
+    pub created_at: Option<NaiveDateTime>, 
+    pub updated_at: Option<NaiveDateTime>
+}
 
-#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Insertable, Selectable)]
+#[derive(Debug, Clone, Serialize, Deserialize, Queryable, Selectable)]
 #[diesel(table_name = documents)]
 #[diesel(check_for_backend(Pg))]
 pub struct Document{
