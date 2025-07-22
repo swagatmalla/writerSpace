@@ -72,3 +72,14 @@ pub struct Document{
     pub updated_at: Option<NaiveDateTime>   
 }
 
+#[derive(Insertable)]
+#[diesel(table_name = documents)]
+pub struct NewDocument{
+    pub project_id: Option<i32>, 
+    pub title: String, 
+    pub content: Option<String>, 
+    pub media_type:Option<String>, 
+    pub file_path:Option<String>, 
+    pub created_at:Option<NaiveDateTime>, 
+    pub updated_at:Option<NaiveDateTime>
+}

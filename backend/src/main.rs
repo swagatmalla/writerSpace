@@ -28,6 +28,7 @@ async fn main(){
             .route("/users", get(handlers::users::get_users))
             .route("/createUser", post(handlers::users::create_user_handler))
             .route("/createProject", post(handlers::projects::create_project_handler))
+            .route("/users/:user_id/projects/:project_id/documents", post(handlers::documents::create_document_handler))
             .with_state(pool.clone());
 
     // Set the address to listen on (localhost:3000)
