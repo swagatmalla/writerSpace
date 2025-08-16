@@ -3,7 +3,7 @@ mod schema;
 mod models;
 mod handlers;
 
-// Bring in required crated from Axum (web framework), Serde (for JSON), and standard library
+// Bring in required crate from Axum (web framework), Serde (for JSON), and standard library
 use axum::{
     routing::{post, get}, //{delete, patch, put}
     Router, 
@@ -26,16 +26,16 @@ async fn main(){
     let app = Router::new()
             .route("/analyze", post(handlers::analyze::analyze_handler))
             .route("/users", get(handlers::users::get_users))
-            .route("/createUser", post(handlers::users::create_user_handler))
-            .route("/createProject", post(handlers::projects::create_project_handler))
-            .route("/users/:user_id/projects/:project_id/documents", post(handlers::documents::create_document_handler))
+            .route("/users", post(handlers::users::create_user_handler))
+            .route("/users/:user_id/projects", post(handlers::projects::create_project_handler))
+            .route("/projects/:project_id/documents", post(handlers::documents::create_document_handler))
             .with_state(pool.clone());
 
     // Set the address to listen on (localhost:3000)
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     // A more verbose way: 
     // let socket = SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), 3000); 
-    println!("✍️ Listening on http://{}", addr);
+    println!("✍️ - Listening on http://{}", addr);
     
 
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();

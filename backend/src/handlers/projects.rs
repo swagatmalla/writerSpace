@@ -1,9 +1,9 @@
 use axum::{
-    extract::State, // Lets you extract shared application state (like the DB pool) inside a handler
-    Json// `Json` lets us work with JSON data easily
+    extract::{State, Path}, // Lets you extract shared application state (like the DB pool) inside a handler
+    Json, // `Json` lets us work with JSON data easily
+    
 };
 
-//use serde::{Deserialize, Serialize};    // For converting between Rust structs and JSON
 use diesel::{prelude::*}; // brings in all common Diesel traits and helper functions into scope
 use chrono::Utc;
 use crate::schema::projects::dsl::*;
@@ -13,26 +13,19 @@ use crate::db::{DbPool};
 
 #[derive(serde::Deserialize)]
 pub struct NewUserInput {
-    user_id: String,
     title: String, 
     description: String
 }
 
 pub async fn create_project_handler(
+    Path(user_id_url): Path<i32>,
     State(pool): State<DbPool>,
     Json(input): Json<NewUserInput>,
     //return type -> Result<Json<Project>, (StatusCode, String)>
 ) -> Result<Json<Project>, (axum::http::StatusCode, String)>{ // return a json object on a succesful operation, or an error tuple on a FAIL
-    
-    // using ? operator will
-    // extract the i32 if Ok(i32)
-    // if Err(...), return early from the function with that error
-    let parsed_user_id = input.user_id.parse().map_err(|e| {
-        (axum::http::StatusCode::BAD_REQUEST, format!("Invalid user_id:{}", e))
-    })?;
 
     let new_project = NewProject {
-        user_id: Some(parsed_user_id),
+        user_id: Some(user_id_url),
         title: input.title.clone(), 
         description: Some(input.description.clone()), 
         created_at: Some(Utc::now().naive_utc()), 

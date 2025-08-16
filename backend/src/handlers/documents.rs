@@ -20,12 +20,11 @@ pub struct NewUserInput {
 }
 
 pub async fn create_document_handler(
-    Path((user_id_url, project_id_url)): Path<(i32, i32)>,
+    Path(project_id_url): Path<i32>,
     State(pool): State<DbPool>,
     Json(input): Json<NewUserInput>,
     //return type -> Result<Json<Project>, (StatusCode, String)>
 ) -> Result<Json<Document>, (axum::http::StatusCode, String)>{ // return a json object on a succesful operation, or an error tuple on a FAIL
-
 
     let new_document= NewDocument {
         project_id: Some(project_id_url), 
