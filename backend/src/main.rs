@@ -24,7 +24,7 @@ async fn main(){
 
     // Create the router and add a POST route at `/analyze` handled by `analyze_handler`
     let app = Router::new()
-            .route("/analyze", post(handlers::analyze::analyze_handler))
+            .route("/documents/:doc_id/analyze", post(handlers::analyze::analyze_handler))
             .route("/users", get(handlers::users::get_users))
             .route("/users", post(handlers::users::create_user_handler))
             .route("/users/:user_id/projects", post(handlers::projects::create_project_handler))
