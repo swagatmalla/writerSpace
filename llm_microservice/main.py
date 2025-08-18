@@ -20,7 +20,7 @@ class GenerationRequest(BaseModel):
 @app.post("/generate")
 def generate_text(data: GenerationRequest):
     prompt = (
-        f"Respond like a writing assistant.\n"
+        f"Respond like a writing assistant. Be precise in your response.\n"
         f"Instruction: {data.instruction}\n"
         f"Text: {data.input_text}\n"
         f"Response:"
