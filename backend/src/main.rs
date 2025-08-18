@@ -9,6 +9,9 @@ use axum::{
     Router, 
 };
 
+// to allow Cross Origin Resource Sharing 
+use tower_http::cors::{Any, CorsLayer};
+
 use std::{env, net::SocketAddr};   // To define the address/port the server listens on 
 use dotenvy::dotenv;
 //use reqwest::Client;
@@ -21,6 +24,11 @@ async fn main(){
     dotenv().ok(); // Load env vars from `.env`
     let database_url = env::var("DATABASE_URL").expect("DATABASE_URL must be set");
     let pool:DbPool = establish_connection_pool(&database_url);
+    //Create the CORS middleware
+    let cors = CorsLayer::new()
+        .allow_origin(Any) //allow all origins (for dev)
+        .allow_methods(Any)
+        .allow_headers(Any);
 
     // Create the router and add a POST route at `/analyze` handled by `analyze_handler`
     let app = Router::new()
@@ -29,6 +37,7 @@ async fn main(){
             .route("/users", post(handlers::users::create_user_handler))
             .route("/users/:user_id/projects", post(handlers::projects::create_project_handler))
             .route("/projects/:project_id/documents", post(handlers::documents::create_document_handler))
+            .layer(cors)
             .with_state(pool.clone());
 
     // Set the address to listen on (localhost:3000)
