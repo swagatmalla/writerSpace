@@ -5,7 +5,7 @@ mod handlers;
 
 // Bring in required crate from Axum (web framework), Serde (for JSON), and standard library
 use axum::{
-    routing::{post, get}, //{delete, patch, put}
+    routing::{post, get, put}, 
     Router, 
 };
 
@@ -32,11 +32,15 @@ async fn main(){
 
     // Create the router and add a POST route at `/analyze` handled by `analyze_handler`
     let app = Router::new()
-            .route("/documents/:doc_id/analyze", post(handlers::analyze::analyze_handler))
             .route("/users", get(handlers::users::get_users))
             .route("/users", post(handlers::users::create_user_handler))
             .route("/users/:user_id/projects", post(handlers::projects::create_project_handler))
+            .route("/users/:user_id/projects", get(handlers::users::get_projects))
             .route("/projects/:project_id/documents", post(handlers::documents::create_document_handler))
+            .route("/projects/:project_id/documents", get(handlers::projects::get_project_documents))
+            .route("/documents/:doc_id/analyze", post(handlers::analyze::analyze_handler))
+            .route("/documents/:doc_id", get(handlers::documents::get_document))
+            .route("/documents/:doc_id", put(handlers::documents::update_document))
             .layer(cors)
             .with_state(pool.clone());
 

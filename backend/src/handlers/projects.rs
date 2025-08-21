@@ -7,14 +7,34 @@ use axum::{
 use diesel::{prelude::*}; // brings in all common Diesel traits and helper functions into scope
 use chrono::Utc;
 use crate::schema::projects::dsl::*;
-use crate::models::Project;
-use crate::models::NewProject;
+use crate::schema::documents::dsl::*;
+use crate::models::{Project, NewProject, Document};
 use crate::db::{DbPool};
 
 #[derive(serde::Deserialize)]
 pub struct NewUserInput {
     title: String, 
     description: String
+}
+
+pub async fn get_project_documents(
+    Path(project_id_url): Path<i32>, 
+    State(pool): State<DbPool>, 
+) -> Result<Json<Vec<Document>>, (axum::http::StatusCode, String)>{
+
+    let mut conn = pool
+        .get()
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let results = documents
+        .filter(project_id.eq(Some(project_id_url)))
+        .select(Document::as_select())
+        .load(&mut conn)
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+
+    return Ok(Json(results));
+
 }
 
 pub async fn create_project_handler(
@@ -42,4 +62,5 @@ pub async fn create_project_handler(
         .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     return Ok(Json(inserted_project));
+
 }

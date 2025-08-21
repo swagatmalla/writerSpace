@@ -6,8 +6,8 @@ use axum::{
 use diesel::{prelude::*}; // brings in all common Diesel traits and helper functions into scope
 use chrono::Utc;
 use crate::schema::users::dsl::*;
-use crate::models::User;
-use crate::models::NewUser;
+use crate::schema::projects::dsl::*;
+use crate::models::{User, NewUser, Project};
 use crate::db::{DbPool};
 
 #[derive(serde::Deserialize)]
@@ -41,14 +41,30 @@ pub async fn create_user_handler(
     return Ok(Json(inserted_user));
 }
 
-pub async fn get_users(State(pool): State<DbPool>) -> Json<Vec<User>>{
-    let mut conn = pool.get().expect("couldn't get a DB connection from the pool");
+pub async fn get_users(State(pool): State<DbPool>) -> Result<Json<Vec<User>>, (axum::http::StatusCode, String)>{
+    let mut conn = pool.get().map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
     let results = users
     .select(User::as_select())
     .load(&mut conn)
-    .expect("Error loading users");
+    .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
 
-    return Json(results)
+    return Ok(Json(results));
+}
+
+//-> Result<Json<User>, (axum::http::StatusCode, String)>
+pub async fn get_projects(State(pool): State<DbPool>) -> Result<Json<Vec<Project>>, (axum::http::StatusCode, String)>{
+    let mut conn = pool
+            .get().map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let results = projects.
+        select(Project::as_select())
+        .load(&mut conn)
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+
+    return Ok(Json(results));
+    
+
 }
 

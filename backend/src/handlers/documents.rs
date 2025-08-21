@@ -7,8 +7,7 @@ use axum::{
 use diesel::{prelude::*}; // brings in all common Diesel traits and helper functions into scope
 use chrono::Utc;
 use crate::schema::documents::dsl::*;
-use crate::models::Document;
-use crate::models::NewDocument;
+use crate::models::{Document, NewDocument};
 use crate::db::{DbPool};
 
 #[derive(serde::Deserialize)]
@@ -17,6 +16,49 @@ pub struct NewUserInput {
     pub content: Option<String>, 
     pub media_type:Option<String>, 
     pub file_path:Option<String>, 
+}
+
+#[derive(serde::Deserialize, diesel::AsChangeset)]
+#[diesel(table_name = crate::schema::documents)]
+pub struct DocUpdate {
+    pub title: Option<String>, 
+    pub content: Option<String>
+}
+
+pub async fn update_document(
+    Path(doc_id): Path<i32>, 
+    State(pool):State<DbPool>, 
+    Json(doc_update): Json<DocUpdate>
+)->Result<Json<Document>, (axum::http::StatusCode, String)>{
+    let mut conn = pool
+        .get()
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+    
+    let result  = diesel::update(documents.filter(id.eq(doc_id)))
+            .set(&doc_update)
+            .get_result(&mut conn)
+            .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    return Ok(Json(result));
+}
+
+pub async fn get_document(
+    Path(document_id_url): Path<i32>, 
+    State(pool): State<DbPool>, 
+)->Result<Json<Document>, (axum::http::StatusCode, String)>{
+    let mut conn = pool
+        .get()
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    let result = documents
+        .filter(id.eq(document_id_url))
+        .select(Document::as_select())
+        .first::<Document>(&mut conn)
+        .map_err(|e| (axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
+
+    return Ok(Json(result));
+
+
 }
 
 pub async fn create_document_handler(
